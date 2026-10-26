@@ -32,7 +32,8 @@
   var state = {
     tweet: null,
     loading: false,
-    controller: null
+    controller: null,
+    qrcodeOverlay: null
   };
 
   function escapeHtml(value) {
@@ -700,6 +701,64 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /* 收款码弹层                                                           */
+  /* ------------------------------------------------------------------ */
+
+  var QRCODE_LABELS = {
+    wechat: '微信收款码',
+    alipay: '支付宝收款码'
+  };
+
+  function onQrcodeImgError(img) {
+    img.style.background = 'rgba(255,255,255,0.04)';
+    img.alt = '请将收款码图片放到 assets/ 目录下';
+  }
+
+  function openQrcode(type) {
+    var title = QRCODE_LABELS[type] || '收款码';
+    var imgSrc = type === 'wechat' ? './assets/qrcode-wechat.png' : './assets/qrcode-alipay.png';
+
+    var overlay = document.createElement('div');
+    overlay.className = 'qrcode-overlay';
+    overlay.setAttribute('role', 'dialog');
+    overlay.setAttribute('aria-modal', 'true');
+    overlay.setAttribute('aria-label', title);
+    overlay.innerHTML =
+      '<div class="qrcode-backdrop" data-close="1"></div>' +
+      '<div class="qrcode-modal">' +
+      '<button type="button" class="icon-btn qrcode-close" aria-label="关闭">' +
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>' +
+      '</button>' +
+      '<div class="qrcode-img-wrap">' +
+      '<img class="qrcode-img qrcode-modal-img" src="' + imgSrc + '" alt="' + title + '" />' +
+      '</div>' +
+      '<span class="qrcode-modal-title">' + title + '</span>' +
+      '</div>';
+
+    overlay.addEventListener('click', function (e) {
+      if (e.target.dataset.close === '1') closeQrcode();
+    });
+
+    var closeBtn = overlay.querySelector('.qrcode-close');
+    if (closeBtn) closeBtn.addEventListener('click', closeQrcode);
+
+    var modalImg = overlay.querySelector('.qrcode-modal-img');
+    if (modalImg) modalImg.addEventListener('error', function () { onQrcodeImgError(modalImg); });
+
+    document.body.appendChild(overlay);
+    document.body.classList.add('no-scroll');
+    state.qrcodeOverlay = overlay;
+  }
+
+  function closeQrcode() {
+    var overlay = state.qrcodeOverlay;
+    if (!overlay) return;
+    document.body.removeChild(overlay);
+    document.body.classList.remove('no-scroll');
+    state.qrcodeOverlay = null;
+  }
+
+  /* ------------------------------------------------------------------ */
   /* 提示                                                                 */
   /* ------------------------------------------------------------------ */
 
@@ -870,6 +929,8 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !els.overlay.classList.contains('hidden')) {
       closePreview();
+    } else if (e.key === 'Escape' && state.qrcodeOverlay) {
+      closeQrcode();
     }
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       parse();
@@ -889,5 +950,18 @@
       parse(url);
     }
     syncClearButton();
+
+    // 收款码卡片点击（事件委托）
+    document.addEventListener('click', function (e) {
+      var card = e.target.closest('.qrcode-card');
+      if (card) {
+        openQrcode(card.dataset.qrcode);
+      }
+    });
+
+    // 静态收款码图片加载错误处理
+    $$('[data-qrcode-img]').forEach(function (img) {
+      img.addEventListener('error', function () { onQrcodeImgError(img); });
+    });
   })();
 })();

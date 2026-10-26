@@ -80,6 +80,19 @@
 
       <section id="result" class="result" aria-live="polite"></section>
 
+      <!-- 广告位 -->
+      <section class="ad-slot" aria-label="广告">
+        <div class="ad-label">Advertisement</div>
+        <div class="ad-content">
+          <!-- 在此插入第三方广告代码（Google AdSense / Ezoic 等） -->
+          <!--<ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-XXXXXXXXXXXXXXXX" data-ad-slot="XXXXXXXXXX" data-ad-format="auto" data-full-width-responsive="true"></ins>-->
+          <div class="ad-placeholder">
+            <p class="ad-placeholder-text">广告位招商 · Ad Space Available</p>
+            <p class="ad-placeholder-sub">联系开发者投放你的产品或服务</p>
+          </div>
+        </div>
+      </section>
+
       <section class="tips">
         <article class="tip">
           <span class="tip-index">01</span>
@@ -98,6 +111,86 @@
         </article>
       </section>
     </main>
+
+    <!-- 底部捐赠区 -->
+    <section class="donate-section" aria-label="支持开发者">
+      <div class="donate-inner">
+        <h2 class="donate-title">支持这个项目</h2>
+        <p class="donate-desc">如果这个工具帮你省下了时间，欢迎请我喝杯咖啡 ☕，你的支持是持续更新的最大动力。</p>
+
+        <!-- 平台捐赠按钮 -->
+        <div class="donate-platforms">
+          <a
+            class="donate-btn donate-bmc"
+            href="https://www.buymeacoffee.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-donate="bmc"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 8h1a4 4 0 010 8h-1" />
+              <path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z" />
+              <line x1="6" y1="1" x2="6" y2="4" />
+              <line x1="10" y1="1" x2="10" y2="4" />
+              <line x1="14" y1="1" x2="14" y2="4" />
+            </svg>
+            Buy Me a Coffee
+          </a>
+          <a
+            class="donate-btn donate-kofi"
+            href="https://ko-fi.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-donate="kofi"
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M23.881 12.29c-.693-4.08-2.97-7.05-5.797-7.05-2.096 0-3.978 1.415-5.118 3.528-.41-.076-.834-.11-1.266-.11-2.583 0-4.71 1.67-5.314 4.01-.742-.206-1.524-.317-2.33-.317-4.225 0-7.43 2.77-7.43 6.57 0 2.53 1.62 4.703 4.055 5.866a.8.8 0 00.416.114h14.057a.783.783 0 00.667-.372c.466-.765.744-1.644.777-2.572.008-.258.012-.52.012-.787 0-1.948-.344-3.832-.889-5.475z"/>
+            </svg>
+            Ko-fi
+          </a>
+        </div>
+
+        <!-- 收款码 -->
+        <div class="donate-qrcodes">
+          <button class="qrcode-card" type="button" data-qrcode="wechat" aria-label="微信收款码">
+            <span class="qrcode-badge qrcode-wechat" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 0 0 .167-.054l1.903-1.114a.864.864 0 0 1 .717-.098 10.16 10.16 0 0 0 2.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178A1.17 1.17 0 0 1 4.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 0 1-1.162 1.178 1.17 1.17 0 0 1-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 0 1 .598.082l1.584.926a.272.272 0 0 0 .14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 0 1-.023-.156.49.49 0 0 1 .201-.398C23.024 18.48 24 16.82 24 14.98c0-3.21-2.931-5.837-6.656-6.088V8.89c-.135-.01-.27-.027-.406-.032zm-2.68 2.905c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.97-.982zm4.844 0c.535 0 .969.44.969.982a.976.976 0 0 1-.969.983.976.976 0 0 1-.969-.983c0-.542.434-.982.969-.982z"/>
+              </svg>
+              微信
+            </span>
+            <div class="qrcode-img-wrap">
+              <img
+                class="qrcode-img"
+                src="./assets/qrcode-wechat.png"
+                alt="微信收款码"
+                loading="lazy"
+                data-qrcode-img="wechat"
+              />
+            </div>
+            <span class="qrcode-label">点击查看大图</span>
+          </button>
+          <button class="qrcode-card" type="button" data-qrcode="alipay" aria-label="支付宝收款码">
+            <span class="qrcode-badge qrcode-alipay" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M18.5 3.5c-.5 0-1 .1-1.4.3-3.1 1.4-5.1 3.9-6.3 6.8-.5 1.1-.9 2.2-1.1 3.3.3 0 .6 0 .9-.1 3.1-.4 5.3-2 6.6-4.5.4-.8.6-1.6.7-2.4h-4V6.2h4.9v-.3c0-.9-.5-1.7-1.4-2.4l-.2 0zM2.9 13.7c.2-.5.5-1 .9-1.4-.7-1.2-1.3-2.5-1.7-3.9H4.4c.3 1.1.8 2.2 1.4 3.2.6-.8 1.3-1.6 2.1-2.3.9-.7 1.9-1.3 2.9-1.7.4-.1.7-.2 1.1-.3h-5V6.4h5.4V5.3h-3.3V4.4H6.7v1H3.4v1.1h1.8c-.3.5-.5 1-.7 1.6H1.1v1.2h3c-.3.5-.5 1-.7 1.6H0v1.2h3.4c-.2.6-.4 1.2-.5 1.8l-.5 1.7c-.1.4 0 .9.3 1.2.3.4.8.6 1.3.6h12.4c.5 0 .9 0 1.3-.1.9-.2 1.7-.6 2.3-1.3.7-.7 1-1.6 1-2.7 0-1-.4-1.9-1.1-2.6-.7-.7-1.7-1.1-2.9-1.1H17l-.5.1c-.7.1-1.4.4-2 .7-.7.4-1.3.8-1.8 1.4.9.2 1.7.5 2.5.9 1.7.8 2.7 1.9 3 3.1.1.5.1 1.1 0 1.7-.1.5-.4 1-.9 1.3-.4.3-.9.5-1.6.5H3c-.5 0-.9-.3-1.1-.7-.1-.3 0-.7.1-1l.9-3.3z"/>
+              </svg>
+              支付宝
+            </span>
+            <div class="qrcode-img-wrap">
+              <img
+                class="qrcode-img"
+                src="./assets/qrcode-alipay.png"
+                alt="支付宝收款码"
+                loading="lazy"
+                data-qrcode-img="alipay"
+              />
+            </div>
+            <span class="qrcode-label">点击查看大图</span>
+          </button>
+        </div>
+      </div>
+    </section>
 
     <footer class="footer">
       <p>仅供个人学习与备份使用，请尊重原作者版权。受保护或已删除的推文无法解析。</p>
