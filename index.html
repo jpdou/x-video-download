@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Twitter 视频下载器 · X Video Downloader</title>
+    <meta name="description" content="纯前端 Twitter / X 视频下载工具：粘贴推文链接，一键解析并下载高清视频。" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%231d9bf0'/%3E%3Cpath d='M6 6l12 12M18 6L6 18' stroke='%23fff' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-1" aria-hidden="true"></div>
+    <div class="bg-glow bg-glow-2" aria-hidden="true"></div>
+    <div class="bg-grid" aria-hidden="true"></div>
+
+    <header class="topbar">
+      <a class="brand" href="./">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+            <path d="M4 4l16 16M20 4L4 20" />
+          </svg>
+        </span>
+        <span class="brand-name">X Video Downloader</span>
+      </a>
+      <div class="topbar-meta">
+        <span class="dot"></span>
+        <span>纯前端 · 无需登录</span>
+      </div>
+    </header>
+
+    <main class="page">
+      <section class="hero">
+        <span class="hero-pill">TWITTER / X · VIDEO</span>
+        <h1>一键下载 <span class="grad">Twitter 视频</span></h1>
+        <p class="hero-sub">粘贴推文分享链接，解析原始 MP4，支持多清晰度选择与在线预览。全部逻辑运行在浏览器中。</p>
+      </section>
+
+      <form class="search-card" id="parse-form" autocomplete="off">
+        <div class="input-row">
+          <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+            <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.5 1.5" />
+            <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.5-1.5" />
+          </svg>
+          <input
+            id="url-input"
+            name="url"
+            type="text"
+            inputmode="url"
+            placeholder="https://x.com/username/status/1234567890"
+            spellcheck="false"
+            aria-label="推文链接"
+          />
+          <button type="button" class="ghost-btn" id="paste-btn" title="从剪贴板粘贴">粘贴</button>
+          <button type="button" class="icon-btn" id="clear-btn" title="清空" hidden aria-label="清空输入">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <button type="submit" class="parse-btn" id="parse-btn">
+          <span class="btn-label">解析视频</span>
+          <span class="spinner" aria-hidden="true"></span>
+          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </form>
+
+      <div class="examples" id="examples">
+        <span class="examples-label">示例</span>
+        <button type="button" class="example-chip" data-url="https://x.com/starter_story/status/2071077368001876345">
+          横屏 · 多清晰度
+        </button>
+        <button type="button" class="example-chip" data-url="https://x.com/sciencegirl/status/2048046638254489836">
+          竖屏 · 1080p
+        </button>
+      </div>
+
+      <div id="status" class="status" role="status" hidden></div>
+
+      <section id="result" class="result" aria-live="polite"></section>
+
+      <section class="tips">
+        <article class="tip">
+          <span class="tip-index">01</span>
+          <h3>复制分享链接</h3>
+          <p>在 X / Twitter 中点击「分享 → 复制链接」，电脑端直接复制地址栏地址即可。</p>
+        </article>
+        <article class="tip">
+          <span class="tip-index">02</span>
+          <h3>解析全部画质</h3>
+          <p>浏览器直接读取推文媒体信息，列出 Twitter 提供的全部 MP4 清晰度。</p>
+        </article>
+        <article class="tip">
+          <span class="tip-index">03</span>
+          <h3>保存到本地</h3>
+          <p>点击下载，视频在浏览器内合并为文件保存，文件名包含作者与推文 ID。</p>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>仅供个人学习与备份使用，请尊重原作者版权。受保护或已删除的推文无法解析。</p>
+      <p class="footer-dim">页面完全运行在浏览器中，无后端服务；下载与预览均直连 Twitter CDN。</p>
+    </footer>
+
+    <div class="hidden" id="preview-overlay" aria-hidden="true">
+      <div class="preview-backdrop" data-close="1"></div>
+      <div class="preview-panel" role="dialog" aria-modal="true" aria-label="视频预览">
+        <div class="preview-head">
+          <span id="preview-title">视频预览</span>
+          <button type="button" class="icon-btn" id="preview-close" aria-label="关闭预览">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="preview-body" id="preview-body"></div>
+        <div class="preview-foot" id="preview-foot"></div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" hidden></div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
