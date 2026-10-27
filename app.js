@@ -431,9 +431,7 @@
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>' +
       '<span class="download-label">下载视频</span></button>' +
       '<button type="button" class="secondary-btn" data-action="copy">复制直链</button>' +
-      '</div>' +
-      '<div class="progress" data-role="progress" hidden><div class="progress-bar" data-role="bar"></div><span class="progress-text" data-role="progress-text">0%</span></div>' +
-      '</div></article>'
+      '</div></div></article>'
     );
   }
 
@@ -530,127 +528,34 @@
   /* 下载                                                                 */
   /* ------------------------------------------------------------------ */
 
-  function updateProgress(card, ratio, received) {
-    var wrap = $('[data-role="progress"]', card);
-    var bar = $('[data-role="bar"]', card);
-    var text = $('[data-role="progress-text"]', card);
-    var label = $('.download-label', card);
-    if (!wrap) return;
-    wrap.hidden = false;
-    if (ratio != null) {
-      var percent = Math.min(100, Math.round(ratio * 100));
-      bar.style.width = percent + '%';
-      text.textContent = percent + '%';
-      if (label) label.textContent = '下载中 ' + percent + '%';
-    } else {
-      bar.style.width = '35%';
-      bar.classList.add('is-indeterminate');
-      text.textContent = (received / 1048576).toFixed(1) + ' MB';
-      if (label) label.textContent = '下载中…';
-    }
-  }
-
-  function resetProgress(card) {
-    var wrap = $('[data-role="progress"]', card);
-    var bar = $('[data-role="bar"]', card);
-    var label = $('.download-label', card);
-    if (wrap) wrap.hidden = true;
-    if (bar) {
-      bar.style.width = '0%';
-      bar.classList.remove('is-indeterminate');
-    }
-    if (label) label.textContent = '下载视频';
-  }
-
-  async function fetchVideoBlob(url, onProgress) {
-    var controller = new AbortController();
-    var timer = setTimeout(function () { controller.abort(); }, 12000);
-    var res;
-    try {
-      res = await fetch(url, {
-        cache: 'no-store',
-        referrerPolicy: 'no-referrer',
-        signal: controller.signal
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-
-    var type = (res.headers.get('content-type') || '').toLowerCase();
-    var typeOk =
-      !type ||
-      type.indexOf('video/') === 0 ||
-      type.indexOf('application/octet-stream') === 0 ||
-      type.indexOf('application/mp4') === 0;
-    if (!typeOk) throw new Error('中转服务返回异常内容');
-
-    var total = Number(res.headers.get('content-length')) || 0;
-
-    if (!res.body || !res.body.getReader) {
-      var blob = await res.blob();
-      if (!blob.size) throw new Error('返回内容为空');
-      onProgress(1);
-      return blob;
-    }
-
-    var reader = res.body.getReader();
-    var chunks = [];
-    var received = 0;
-    while (true) {
-      var step = await reader.read();
-      if (step.done) break;
-      chunks.push(step.value);
-      received += step.value.length;
-      onProgress(total ? received / total : null, received);
-    }
-    if (!received) throw new Error('返回内容为空');
-    return new Blob(chunks, { type: 'video/mp4' });
-  }
-
-  function saveBlob(blob, filename) {
-    var objectUrl = URL.createObjectURL(blob);
+  function triggerDirectDownload(url, filename) {
     var a = document.createElement('a');
-    a.href = objectUrl;
+    a.href = url;
     a.download = filename;
+    a.rel = 'noopener noreferrer';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    setTimeout(function () { URL.revokeObjectURL(objectUrl); }, 5000);
   }
 
   async function downloadVideo(btn, videoIndex, format) {
     if (btn.disabled || !state.tweet) return;
     var tweet = state.tweet;
-    var card = btn.closest('.video-card');
     var filename = safeFileName(
       tweet.author.screenName + '-' + tweet.id + (tweet.videos.length > 1 ? '-' + (videoIndex + 1) : '') + '-' + format.label,
       'twitter-video'
     );
 
-    btn.disabled = true;
-    btn.classList.add('is-busy');
-    resetProgress(card);
-    updateProgress(card, 0, 0);
-
     try {
-      var blob = await fetchVideoBlob(format.url, function (ratio, received) {
-        updateProgress(card, ratio, received);
-      });
-      resetProgress(card);
-      saveBlob(blob, filename);
-      showToast('已开始保存 · ' + Math.max(1, Math.round(blob.size / 1048576)) + ' MB');
+      triggerDirectDownload(format.url, filename);
+      showToast('已触发下载 · 请在浏览器下载管理器中查看进度');
     } catch (err) {
-      resetProgress(card);
       showToast(
         '下载失败' + (err && err.message ? '（' + escapeHtml(err.message) + '）' : '') +
           '，可尝试<a href="' + escapeHtml(format.url) + '" target="_blank" rel="noopener noreferrer">直接打开视频</a>。',
         'error',
         8000
       );
-    } finally {
-      btn.disabled = false;
-      btn.classList.remove('is-busy');
     }
   }
 
