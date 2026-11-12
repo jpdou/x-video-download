@@ -20,7 +20,6 @@
     clearBtn: $('#clear-btn'),
     status: $('#status'),
     result: $('#result'),
-    examples: $('#examples'),
     overlay: $('#preview-overlay'),
     previewBody: $('#preview-body'),
     previewFoot: $('#preview-foot'),
@@ -32,8 +31,7 @@
   var state = {
     tweet: null,
     loading: false,
-    controller: null,
-    qrcodeOverlay: null
+    controller: null
   };
 
   function escapeHtml(value) {
@@ -90,6 +88,15 @@
     var value = Number(bitrate) || 0;
     if (!value) return '';
     return (value / 1e6).toFixed(value >= 1e6 ? 1 : 2) + ' Mbps';
+  }
+
+  // 码率 × 时长 估算文件体积
+  function estimateSize(bitrate, duration) {
+    var rate = Number(bitrate) || 0;
+    var seconds = Number(duration) || 0;
+    if (!rate || !seconds) return '';
+    var mb = (rate * seconds) / 8 / 1048576;
+    return (mb >= 10 ? Math.round(mb) : mb.toFixed(1)) + 'MB';
   }
 
   function safeFileName(name, fallback) {
@@ -160,7 +167,7 @@
         width: width,
         height: height,
         label: qualityLabel(width, height),
-        resolution: width && height ? width + '×' + height : '',
+        resolution: width && height ? width + 'x' + height : '',
         bitrate: Number(item.bitrate) || 0
       });
     });
@@ -298,7 +305,7 @@
       try {
         var res = await fetchWithTimeout(source.build(id), 15000, signal);
         if (!res.ok) {
-          lastMessage = '解析接口返回 ' + res.status + '，请稍后重试';
+          lastMessage = '解析失败，请稍后重试';
           continue;
         }
         var json = await res.json();
@@ -310,7 +317,7 @@
         lastMessage = '该推文不存在、已被删除或受保护';
       } catch (err) {
         if (err && err.name === 'AbortError') throw err;
-        lastMessage = navigator.onLine ? '解析服务暂时不可用，请稍后重试' : '当前网络已断开，请检查网络';
+        lastMessage = navigator.onLine ? '暂时无法解析，请稍后重试' : '当前网络已断开，请检查网络';
       }
     }
 
@@ -399,17 +406,21 @@
       ? '<img class="thumb-img" src="' + escapeHtml(video.thumbnail) + '" data-src="' + escapeHtml(video.thumbnail) + '" alt="视频封面" referrerpolicy="no-referrer" loading="lazy" />'
       : '<div class="thumb-placeholder"></div>';
 
-    var options = formats
+    var first = formats[0];
+
+    var qualityItems = formats
       .map(function (f, i) {
-        var bits = [f.label];
-        if (f.resolution) bits.push(f.resolution);
-        if (f.bitrate) bits.push(formatMbps(f.bitrate));
-        return '<option value="' + i + '"' + (i === 0 ? ' selected' : '') + '>' + escapeHtml(bits.join(' · ')) + '</option>';
+        var spec = [f.resolution || f.label, '(mp4)', estimateSize(f.bitrate, video.duration)]
+          .filter(Boolean)
+          .join(' ');
+        return (
+          '<li class="quality-item">' +
+          '<span class="quality-spec">' + escapeHtml(spec) + '</span>' +
+          '<a class="quality-download" data-role="download" data-format-index="' + i + '" href="' + escapeHtml(f.url) + '" download="' + escapeHtml(buildDownloadFilename(tweet, index, f)) + '" rel="noopener noreferrer">下载</a>' +
+          '</li>'
+        );
       })
       .join('');
-
-    var first = formats[0];
-    var firstBits = [first.label, first.resolution, formatMbps(first.bitrate)].filter(Boolean);
 
     return (
       '<article class="video-card" data-video-index="' + index + '">' +
@@ -422,17 +433,13 @@
       '</div>' +
       '<div class="video-body">' +
       '<div class="video-title"><span class="live-dot"></span>视频 ' + (index + 1) + ' · 共 ' + formats.length + ' 种画质</div>' +
-      '<div class="field"><label for="quality-' + index + '">清晰度</label>' +
-      '<div class="select-wrap"><select id="quality-' + index + '" class="quality-select" data-role="quality">' + options + '</select>' +
-      '<svg class="select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div></div>' +
-      '<div class="file-meta" data-role="meta">' + escapeHtml(firstBits.join(' · ')) + '</div>' +
       '<div class="video-actions">' +
-      '<a class="download-btn" data-action="download" href="' + escapeHtml(first.url) + '" download="' + escapeHtml(safeFileName('', 'twitter-video')) + '" rel="noopener noreferrer">' +
+      '<a class="download-btn" data-role="download" data-format-index="0" href="' + escapeHtml(first.url) + '" download="' + escapeHtml(buildDownloadFilename(tweet, index, first)) + '" rel="noopener noreferrer">' +
       '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 11l5 5 5-5"/><path d="M4 20h16"/></svg>' +
       '<span class="download-label">下载视频</span></a>' +
-      '<button type="button" class="secondary-btn" data-action="copy">复制直链</button>' +
       '</div>' +
       '<div class="progress" data-role="progress" hidden><div class="progress-bar" data-role="bar"></div><span class="progress-text" data-role="progress-text">0%</span></div>' +
+      '<ul class="quality-list">' + qualityItems + '</ul>' +
       '</div></article>'
     );
   }
@@ -487,51 +494,19 @@
   }
 
   function bindVideoCard(card) {
-    var select = $('[data-role="quality"]', card);
-    var meta = $('[data-role="meta"]', card);
-    var downloadBtn = $('[data-action="download"]', card);
     var index = Number(card.dataset.videoIndex);
-
-    function currentFormat() {
-      var tweet = state.tweet;
-      var video = tweet && tweet.videos[index];
-      if (!video) return null;
-      return video.formats[Number(select.value)] || video.formats[0];
-    }
-
-    function syncMeta() {
-      var format = currentFormat();
-      if (!format) return;
-      var bits = [format.label, format.resolution, formatMbps(format.bitrate)].filter(Boolean);
-      meta.textContent = bits.join(' · ');
-      // 同步下载链接
-      if (downloadBtn) {
-        var tweet = state.tweet;
-        downloadBtn.href = format.url;
-        if (tweet) downloadBtn.setAttribute('download', buildDownloadFilename(tweet, index, format));
-      }
-    }
-
-    select.addEventListener('change', syncMeta);
-    // 初始同步一次 download 属性（拿到真实 tweet 数据后）
-    if (state.tweet) syncMeta(); else setTimeout(syncMeta, 0);
 
     // 桌面端点击拦截：阻止默认跳转，走 fetch+Blob 保存（弹出"另存为"对话框，文件名可控）
     // 移动端长按：不拦截，浏览器看到 <a href> 直接弹出原生"下载链接"菜单
-    downloadBtn.addEventListener('click', function (e) {
-      var format = currentFormat();
-      if (!format || !state.tweet) return;
-      e.preventDefault();
-      downloadVideo(downloadBtn, index, format);
-    });
-
-    $('[data-action="copy"]', card).addEventListener('click', function () {
-      var format = currentFormat();
-      if (!format) return;
-      copyText(format.url).then(
-        function () { showToast('直链已复制到剪贴板'); },
-        function () { showToast('复制失败，请手动选择链接', 'error'); }
-      );
+    $$('[data-role="download"]', card).forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var video = state.tweet && state.tweet.videos[index];
+        if (!video) return;
+        var format = video.formats[Number(link.dataset.formatIndex) || 0];
+        if (!format) return;
+        e.preventDefault();
+        downloadVideo(link, index, format);
+      });
     });
 
     var thumb = $('[data-action="preview"]', card);
@@ -549,11 +524,13 @@
   /* 下载                                                                 */
   /* ------------------------------------------------------------------ */
 
-  function updateProgress(card, ratio, received) {
+  function updateProgress(btn, ratio, received) {
+    var card = btn.closest('.video-card');
+    if (!card) return;
     var wrap = $('[data-role="progress"]', card);
     var bar = $('[data-role="bar"]', card);
     var text = $('[data-role="progress-text"]', card);
-    var label = $('.download-label', card);
+    var label = $('.download-label', btn);
     if (!wrap) return;
     wrap.hidden = false;
     if (ratio != null) {
@@ -570,10 +547,12 @@
     }
   }
 
-  function resetProgress(card) {
+  function resetProgress(btn) {
+    var card = btn.closest('.video-card');
+    if (!card) return;
     var wrap = $('[data-role="progress"]', card);
     var bar = $('[data-role="bar"]', card);
-    var label = $('.download-label', card);
+    var label = $('.download-label', btn);
     if (wrap) wrap.hidden = true;
     if (bar) {
       bar.style.width = '0%';
@@ -595,7 +574,7 @@
       type.indexOf('video/') === 0 ||
       type.indexOf('application/octet-stream') === 0 ||
       type.indexOf('application/mp4') === 0;
-    if (!typeOk) throw new Error('中转服务返回异常内容');
+    if (!typeOk) throw new Error('返回内容异常，请稍后重试');
 
     var total = Number(res.headers.get('content-length')) || 0;
 
@@ -636,22 +615,21 @@
 
   async function downloadVideo(btn, videoIndex, format) {
     if (btn.classList.contains('is-busy') || !state.tweet) return;
-    var card = btn.closest('.video-card');
     var filename = buildDownloadFilename(state.tweet, videoIndex, format);
 
     btn.classList.add('is-busy');
-    resetProgress(card);
-    updateProgress(card, 0, 0);
+    resetProgress(btn);
+    updateProgress(btn, 0, 0);
 
     try {
       var blob = await fetchVideoBlob(format.url, function (ratio, received) {
-        updateProgress(card, ratio, received);
+        updateProgress(btn, ratio, received);
       });
-      resetProgress(card);
+      resetProgress(btn);
       saveBlobAsFile(blob, filename);
       showToast('已弹出保存对话框 · ' + Math.max(1, Math.round(blob.size / 1048576)) + ' MB');
     } catch (err) {
-      resetProgress(card);
+      resetProgress(btn);
       showToast(
         '下载失败' + (err && err.message ? '（' + escapeHtml(err.message) + '）' : '') +
           '，可尝试<a href="' + escapeHtml(format.url) + '" target="_blank" rel="noopener noreferrer">直接打开视频</a>。',
@@ -671,9 +649,7 @@
     var tweet = state.tweet;
     if (!tweet || !tweet.videos[videoIndex]) return;
     var video = tweet.videos[videoIndex];
-    var card = $('.video-card[data-video-index="' + videoIndex + '"]', els.result);
-    var select = card ? $('[data-role="quality"]', card) : null;
-    var format = video.formats[Number(select && select.value) || 0];
+    var format = video.formats[0];
 
     els.previewTitle.textContent = (video.type === 'gif' ? 'GIF 预览' : '视频预览') + ' · ' + format.label;
     els.previewBody.innerHTML =
@@ -695,7 +671,7 @@
     player.addEventListener('error', function () {
       errorBox.hidden = false;
       errorBox.innerHTML =
-        '浏览器无法加载该视频，可在<a href="' +
+        '该视频暂时无法播放，可在<a href="' +
         escapeHtml(format.url) +
         '" target="_blank" rel="noopener noreferrer">新窗口打开原视频</a>。';
     });
@@ -707,64 +683,6 @@
     els.previewBody.innerHTML = '';
     els.previewFoot.innerHTML = '';
     document.body.classList.remove('no-scroll');
-  }
-
-  /* ------------------------------------------------------------------ */
-  /* 收款码弹层                                                           */
-  /* ------------------------------------------------------------------ */
-
-  var QRCODE_LABELS = {
-    wechat: '微信收款码',
-    alipay: '支付宝收款码'
-  };
-
-  function onQrcodeImgError(img) {
-    img.style.background = 'rgba(255,255,255,0.04)';
-    img.alt = '请将收款码图片放到 assets/ 目录下';
-  }
-
-  function openQrcode(type) {
-    var title = QRCODE_LABELS[type] || '收款码';
-    var imgSrc = type === 'wechat' ? './assets/qrcode-wechat.png' : './assets/qrcode-alipay.png';
-
-    var overlay = document.createElement('div');
-    overlay.className = 'qrcode-overlay';
-    overlay.setAttribute('role', 'dialog');
-    overlay.setAttribute('aria-modal', 'true');
-    overlay.setAttribute('aria-label', title);
-    overlay.innerHTML =
-      '<div class="qrcode-backdrop" data-close="1"></div>' +
-      '<div class="qrcode-modal">' +
-      '<button type="button" class="icon-btn qrcode-close" aria-label="关闭">' +
-      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>' +
-      '</button>' +
-      '<div class="qrcode-img-wrap">' +
-      '<img class="qrcode-img qrcode-modal-img" src="' + imgSrc + '" alt="' + title + '" />' +
-      '</div>' +
-      '<span class="qrcode-modal-title">' + title + '</span>' +
-      '</div>';
-
-    overlay.addEventListener('click', function (e) {
-      if (e.target.dataset.close === '1') closeQrcode();
-    });
-
-    var closeBtn = overlay.querySelector('.qrcode-close');
-    if (closeBtn) closeBtn.addEventListener('click', closeQrcode);
-
-    var modalImg = overlay.querySelector('.qrcode-modal-img');
-    if (modalImg) modalImg.addEventListener('error', function () { onQrcodeImgError(modalImg); });
-
-    document.body.appendChild(overlay);
-    document.body.classList.add('no-scroll');
-    state.qrcodeOverlay = overlay;
-  }
-
-  function closeQrcode() {
-    var overlay = state.qrcodeOverlay;
-    if (!overlay) return;
-    document.body.removeChild(overlay);
-    document.body.classList.remove('no-scroll');
-    state.qrcodeOverlay = null;
   }
 
   /* ------------------------------------------------------------------ */
@@ -788,28 +706,6 @@
       els.toast.classList.remove('show');
       setTimeout(function () { els.toast.hidden = true; }, 260);
     }, duration || 3200);
-  }
-
-  function copyText(text) {
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      return navigator.clipboard.writeText(text);
-    }
-    return new Promise(function (resolve, reject) {
-      var textarea = document.createElement('textarea');
-      textarea.value = text;
-      textarea.style.position = 'fixed';
-      textarea.style.opacity = '0';
-      document.body.appendChild(textarea);
-      textarea.select();
-      try {
-        var ok = document.execCommand('copy');
-        document.body.removeChild(textarea);
-        ok ? resolve() : reject(new Error('copy failed'));
-      } catch (err) {
-        document.body.removeChild(textarea);
-        reject(err);
-      }
-    });
   }
 
   /* ------------------------------------------------------------------ */
@@ -890,7 +786,7 @@
 
   els.pasteBtn.addEventListener('click', function () {
     if (!navigator.clipboard || !navigator.clipboard.readText) {
-      showToast('当前浏览器不支持读取剪贴板，请手动粘贴', 'error');
+      showToast('无法读取剪贴板，请手动粘贴', 'error');
       els.input.focus();
       return;
     }
@@ -921,14 +817,6 @@
     els.input.focus();
   });
 
-  els.examples.addEventListener('click', function (e) {
-    var chip = e.target.closest('.example-chip');
-    if (!chip) return;
-    els.input.value = chip.dataset.url;
-    syncClearButton();
-    parse(chip.dataset.url);
-  });
-
   els.previewClose.addEventListener('click', closePreview);
 
   els.overlay.addEventListener('click', function (e) {
@@ -938,8 +826,6 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && !els.overlay.classList.contains('hidden')) {
       closePreview();
-    } else if (e.key === 'Escape' && state.qrcodeOverlay) {
-      closeQrcode();
     }
     if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
       parse();
@@ -959,18 +845,5 @@
       parse(url);
     }
     syncClearButton();
-
-    // 收款码卡片点击（事件委托）
-    document.addEventListener('click', function (e) {
-      var card = e.target.closest('.qrcode-card');
-      if (card) {
-        openQrcode(card.dataset.qrcode);
-      }
-    });
-
-    // 静态收款码图片加载错误处理
-    $$('[data-qrcode-img]').forEach(function (img) {
-      img.addEventListener('error', function () { onQrcodeImgError(img); });
-    });
   })();
 })();

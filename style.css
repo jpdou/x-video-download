@@ -420,40 +420,6 @@ svg {
   }
 }
 
-/* ------------------------------ 示例 ------------------------------ */
-
-.examples {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 18px auto 0;
-  max-width: 780px;
-}
-
-.examples-label {
-  color: var(--dim);
-  font-size: 12px;
-  letter-spacing: 0.08em;
-}
-
-.example-chip {
-  padding: 5px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--muted);
-  font-size: 12.5px;
-  transition: all 0.16s ease;
-}
-
-.example-chip:hover {
-  color: var(--text);
-  border-color: rgba(29, 155, 240, 0.4);
-  background: rgba(29, 155, 240, 0.1);
-}
-
 /* ------------------------------ 状态提示 ------------------------------ */
 
 .status {
@@ -830,73 +796,71 @@ svg {
   box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.16);
 }
 
-.field {
+.quality-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.quality-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
-}
-
-.field label {
-  flex: none;
-  color: var(--dim);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-}
-
-.select-wrap {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-}
-
-.quality-select {
-  width: 100%;
-  height: 38px;
-  padding: 0 34px 0 12px;
+  min-height: 38px;
+  padding: 0 6px 0 12px;
   border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(10, 12, 18, 0.8);
-  color: var(--text);
-  font-size: 13px;
-  font-weight: 500;
-  appearance: none;
-  -webkit-appearance: none;
-  outline: none;
-  cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(10, 12, 18, 0.6);
   transition: border-color 0.16s ease, background 0.16s ease;
 }
 
-.quality-select:hover {
-  border-color: rgba(255, 255, 255, 0.2);
+.quality-item:hover {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(16, 19, 27, 0.8);
 }
 
-.quality-select:focus {
-  border-color: rgba(29, 155, 240, 0.55);
-  box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.12);
-}
-
-.quality-select option {
-  background: #12151d;
-  color: var(--text);
-}
-
-.select-arrow {
-  position: absolute;
-  right: 11px;
-  top: 50%;
-  width: 15px;
-  height: 15px;
-  margin-top: -7.5px;
-  color: #8b94a8;
-  pointer-events: none;
-}
-
-.file-meta {
-  color: var(--dim);
-  font-size: 12px;
+.quality-spec {
+  min-width: 0;
+  color: #cdd4e3;
+  font-size: 12.5px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
-  min-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quality-download {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(29, 155, 240, 0.35);
+  background: rgba(29, 155, 240, 0.12);
+  color: #63c4ff;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease;
+}
+
+.quality-download:hover {
+  background: rgba(29, 155, 240, 0.24);
+  border-color: rgba(29, 155, 240, 0.6);
+  color: #9adcff;
+}
+
+.quality-download.is-busy {
+  opacity: 0.6;
+  pointer-events: none;
+  cursor: progress;
 }
 
 .video-actions {
@@ -991,25 +955,6 @@ svg {
   font-variant-numeric: tabular-nums;
   min-width: 42px;
   text-align: right;
-}
-
-.secondary-btn {
-  height: 42px;
-  padding: 0 16px;
-  border-radius: 11px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  transition: all 0.16s ease;
-  cursor: pointer;
-}
-
-.secondary-btn:hover {
-  color: var(--text);
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.08);
 }
 
 /* ------------------------------ 无视频 / 骨架 ------------------------------ */
@@ -1437,10 +1382,6 @@ svg {
     padding: 0 14px;
   }
 
-  .secondary-btn {
-    padding: 0 13px;
-  }
-
   .preview-panel {
     border-radius: 14px;
   }
@@ -1463,302 +1404,6 @@ svg {
 
   .hero-sub {
     font-size: 13.5px;
-  }
-
-  .examples {
-    gap: 6px;
-  }
-}
-
-/* ------------------------------ 广告位 ------------------------------ */
-
-.ad-slot {
-  position: relative;
-  max-width: 880px;
-  margin: 22px auto 0;
-  padding: 28px 20px;
-  border-radius: 14px;
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.018);
-  text-align: center;
-}
-
-.ad-label {
-  position: absolute;
-  top: 6px;
-  left: 10px;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #525a6c;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-}
-
-.ad-content {
-  min-height: 60px;
-}
-
-.ad-placeholder {
-  padding: 10px 0;
-}
-
-.ad-placeholder-text {
-  margin: 0 0 4px;
-  color: var(--dim);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.ad-placeholder-sub {
-  margin: 0;
-  color: #4a5163;
-  font-size: 11.5px;
-}
-
-/* ------------------------------ 捐赠区 ------------------------------ */
-
-.donate-section {
-  position: relative;
-  z-index: 1;
-  padding: 54px 20px 40px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  background: rgba(7, 8, 12, 0.55);
-}
-
-.donate-inner {
-  max-width: 620px;
-  margin: 0 auto;
-  text-align: center;
-}
-
-.donate-title {
-  margin: 0 0 8px;
-  font-size: 22px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  background: linear-gradient(100deg, #63c4ff 0%, #8b6dff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.donate-desc {
-  margin: 0 0 22px;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-/* 平台按钮 */
-.donate-platforms {
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 28px;
-}
-
-.donate-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 42px;
-  padding: 0 20px;
-  border-radius: 11px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  transition: transform 0.16s ease, filter 0.16s ease, box-shadow 0.16s ease;
-}
-
-.donate-btn svg {
-  width: 18px;
-  height: 18px;
-}
-
-.donate-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.08);
-}
-
-.donate-bmc {
-  background: #ffdd00;
-  color: #0b0d12;
-  box-shadow: 0 10px 22px -12px rgba(255, 221, 0, 0.7);
-}
-
-.donate-kofi {
-  background: #13c3ff;
-  color: #0b0d12;
-  box-shadow: 0 10px 22px -12px rgba(19, 195, 255, 0.7);
-}
-
-/* 收款码 */
-.donate-qrcodes {
-  display: flex;
-  justify-content: center;
-  gap: 18px;
-  flex-wrap: wrap;
-}
-
-.qrcode-card {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 16px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.03);
-  cursor: zoom-in;
-  transition: border-color 0.2s ease, transform 0.2s ease, background 0.2s ease;
-  max-width: 180px;
-}
-
-.qrcode-card:hover {
-  border-color: rgba(255, 255, 255, 0.22);
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.05);
-}
-
-.qrcode-card:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(29, 155, 240, 0.4);
-}
-
-.qrcode-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 700;
-}
-
-.qrcode-badge svg {
-  width: 13px;
-  height: 13px;
-}
-
-.qrcode-wechat {
-  background: rgba(7, 193, 96, 0.16);
-  color: #3cc47a;
-}
-
-.qrcode-alipay {
-  background: rgba(16, 180, 238, 0.16);
-  color: #4dc6f2;
-}
-
-.qrcode-img-wrap {
-  width: 130px;
-  height: 130px;
-  padding: 6px;
-  border-radius: 10px;
-  background: #fff;
-  display: grid;
-  place-items: center;
-}
-
-.qrcode-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  border-radius: 4px;
-}
-
-.qrcode-label {
-  color: var(--dim);
-  font-size: 11.5px;
-}
-
-/* ------------------------------ 收款码弹层 ------------------------------ */
-
-.qrcode-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: grid;
-  place-items: center;
-  padding: 20px;
-}
-
-.qrcode-backdrop {
-  position: absolute;
-  inset: 0;
-  background: rgba(3, 4, 8, 0.88);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  animation: fade-in 0.2s ease both;
-}
-
-.qrcode-modal {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 14px;
-  padding: 22px 22px 18px;
-  padding-top: 42px;
-  border-radius: 18px;
-  border: 1px solid var(--border-strong);
-  background: #0b0d13;
-  box-shadow: 0 40px 90px -30px #000;
-  animation: pop 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.qrcode-close {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-
-.qrcode-close:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.qrcode-modal .qrcode-img-wrap {
-  width: 280px;
-  height: 280px;
-  padding: 10px;
-}
-
-.qrcode-modal-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #e4e8f1;
-}
-
-/* ------------------------------ 响应式补充 ------------------------------ */
-
-@media (max-width: 640px) {
-  .qrcode-img-wrap {
-    width: 110px;
-    height: 110px;
-  }
-
-  .donate-qrcodes {
-    gap: 14px;
-  }
-
-  .donate-btn {
-    flex: 1;
-    justify-content: center;
-    min-width: 140px;
-  }
-
-  .qrcode-card {
-    max-width: 148px;
-    padding: 12px;
-  }
-
-  .qrcode-modal .qrcode-img-wrap {
-    width: 240px;
-    height: 240px;
   }
 }
 
